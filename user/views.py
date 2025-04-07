@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import views, response, exceptions, permissions
 from . import serializer as user_serializer
-from . import services
+from . import services, authentication
 
 class RegisterApi(views.APIView):
     """
@@ -65,6 +65,56 @@ class LoginApi(views.APIView):
         resp.set_cookie(key="jwt", value=token, httponly=True)
 
         return resp
+
+
+class UserApi(views.APIView):
+    """
+        API endpoint to retrieve the authenticated user's data.
+
+        Requires JWT authentication. Only accessible to authenticated users.
+        Returns serialized user information.
+    """
+    authentication_classes = (authentication.CustomUserAuthentication, )
+    permission_classes = (permissions.IsAuthenticated, )
+    def get(self, request):
+        """
+            Handle GET request to fetch user details.
+
+            Returns:
+                Response: Serialized user data.
+        """
+        user = request.user
+
+        serializer = user_serializer.UserSerializer(user)
+
+        return response.Response(serializer.data)
+
+
+class LogoutApi(views.APIView):
+    """
+        Logout the authenticated user.
+
+        This view deletes the JWT cookie from the client, effectively logging the user out.
+        Authentication is required to access this endpoint.
+    """
+    authentication_classes = (authentication.CustomUserAuthentication, )
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def post(self, request):
+        """
+            Handle POST request to logout the user.
+
+            Deletes the JWT cookie and returns a logout confirmation message.
+
+            Returns:
+                Response: Message indicating successful logout.
+        """
+        resp = response.Response()
+        resp.delete_cookie("jwt")
+        resp.data = {"message": "so long firewall"}
+
+        return resp
+
 
 # {
 # "email": "sanath@gmail.com",
