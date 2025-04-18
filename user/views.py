@@ -111,7 +111,7 @@ class LogoutApi(views.APIView):
         """
         resp = response.Response()
         resp.delete_cookie("jwt")
-        resp.data = {"message": "so long firewall"}
+        resp.data = {"message": "so long farewell"}
 
         return resp
 
